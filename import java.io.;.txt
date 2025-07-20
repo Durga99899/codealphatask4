@@ -1,0 +1,92 @@
+import java.io.*;
+import java.util.*;
+
+class Room {
+    String type;
+    int number;
+    boolean isBooked;
+
+    Room(String type, int number) {
+        this.type = type;
+        this.number = number;
+        this.isBooked = false;
+    }
+
+    @Override
+    public String toString() {
+        return "Room " + number + " [" + type + "] - " + (isBooked ? "Booked" : "Available");
+    }
+}
+
+class Hotel {
+    List<Room> rooms = new ArrayList<>();
+    String fileName = "bookings.txt";
+
+    public Hotel() {
+        // Add sample rooms
+        for (int i = 1; i <= 3; i++) rooms.add(new Room("Standard", i));
+        for (int i = 4; i <= 6; i++) rooms.add(new Room("Deluxe", i));
+        for (int i = 7; i <= 9; i++) rooms.add(new Room("Suite", i));
+        loadBookings();
+    }
+
+    public void displayRooms() {
+        for (Room room : rooms) {
+            System.out.println(room);
+        }
+    }
+
+    public void bookRoom(int roomNumber) {
+        for (Room room : rooms) {
+            if (room.number == roomNumber && !room.isBooked) {
+                room.isBooked = true;
+                saveBookings();
+                System.out.println("Room booked successfully! 💳 Payment confirmed.");
+                return;
+            }
+        }
+        System.out.println("Room not available or doesn't exist.");
+    }
+
+    public void cancelBooking(int roomNumber) {
+        for (Room room : rooms) {
+            if (room.number == roomNumber && room.isBooked) {
+                room.isBooked = false;
+                saveBookings();
+                System.out.println("Booking cancelled successfully.");
+                return;
+            }
+        }
+        System.out.println("Booking not found.");
+    }
+
+    private void saveBookings() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            for (Room room : rooms) {
+                writer.write(room.number + "," + room.type + "," + room.isBooked + "\n");
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving booking data.");
+        }
+    }
+
+    private void loadBookings() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                int num = Integer.parseInt(parts[0]);
+                String type = parts[1];
+                boolean booked = Boolean.parseBoolean(parts[2]);
+
+                for (Room room : rooms) {
+                    if (room.number == num) {
+                        room.isBooked = booked;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("No previous booking file found. Starting fresh.");
+        }
+    }
+}
